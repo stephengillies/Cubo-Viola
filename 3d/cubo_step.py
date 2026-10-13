@@ -1,7 +1,7 @@
-# CUBO DI VIOLA — gli stessi due pezzi di cubo.scad, costruiti come SOLIDI VERI per l'esportazione STEP.
-# OpenSCAD non sa scrivere STEP: questo file ripete la geometria di cubo.scad con CadQuery.
-# Uso: python cubo_step.py <cartella di uscita> [scritta]   (con «scritta»: fianco destro inciso, file cubo_corpo_scritta.step)
-# ⚠️ Le misure sono le stesse di cubo.scad: se cambi un numero la', cambialo anche qui (prova: confronta_step_stl.py).
+# VIOLA'S CUBE — the same two parts as cubo.scad, built as TRUE SOLIDS for STEP export.
+# OpenSCAD cannot write STEP: this file repeats the geometry of cubo.scad using CadQuery.
+# Usage: python cubo_step.py <output_directory> [scritta]   (with «scritta»: engraved right side, file cubo_corpo_scritta.step)
+# ⚠️ The dimensions are the same as cubo.scad: if you change a number there, change it here too (see: confronta_step_stl.py).
 import math
 import sys
 
@@ -35,7 +35,7 @@ par_diag = (L / 2 - R) * math.sqrt(2) + R - P / 2
 
 
 def tondo(l, h, r, z=0.0):
-    """Quadrato di lato l con gli spigoli verticali arrotondati di raggio r, da z a z+h."""
+    """Square of side l with vertical corners rounded to radius r, from z to z+h."""
     return cq.Workplane("XY").workplane(offset=z).rect(l, l).extrude(h).edges("|Z").fillet(r)
 
 
@@ -44,7 +44,7 @@ def scatola(x0, y0, z0, dx, dy, dz):
 
 
 def rinforzo_torretta():
-    """Angolo +X +Y: blocco dalla torretta fin dentro la parete, piu' la mensola inclinata sopra."""
+    """Corner +X +Y: block from the tower up to the wall, plus the inclined shelf above."""
     blocco = scatola(tor_diag, -tor_d / 2, 0, par_diag - tor_diag, tor_d, tor_h)
     mensola = (cq.Workplane("XZ")
                .polyline([(tor_diag - tor_d / 2, tor_h), (par_diag, tor_h), (par_diag, tor_h + mens_h)]).close()
@@ -53,7 +53,7 @@ def rinforzo_torretta():
 
 
 def griglia():
-    """Fessure a parallelogramma del retro (+Y), come griglia_diagonale() di cubo.scad; niente fessure attorno alla tacca DC."""
+    """Diagonal slotted rear panel (+Y), like griglia_diagonale() in cubo.scad; no slots around the DC notch."""
     w = L - 2 * R + 6; h = L - 26
     t = math.tan(math.radians(fess_incl))
     u0, u1, v0, v1 = -w / 2, w / 2, 13, 13 + h
@@ -75,7 +75,7 @@ def griglia():
 
 
 def scritta(testo, corpo_car, grassetto, centro, zc):
-    """Scritta incisa sul fianco destro (+X), come text() di cubo.scad: corpo_car e centro sono tarati sull'ingombro che da' OpenSCAD."""
+    """Engraved text on the right side (+X), like text() in cubo.scad: corpo_car and centro are tuned to the footprint produced by OpenSCAD."""
     fp = "/usr/share/fonts/truetype/liberation/LiberationSans-%s.ttf" % ("Bold" if grassetto else "Regular")
     t = cq.Workplane("XY").text(testo, corpo_car, scritta_prof + 1, fontPath=fp, halign="center", valign="center")
     b = t.val().BoundingBox()
@@ -104,7 +104,7 @@ def corpo(con_scritta=False):
     # retro (+Y) tutto a griglia; tacca per la linguetta della presa DC
     s = s.cut(griglia())
     s = s.cut(scatola(dc_x - (ling_l + 0.4) / 2, L / 2 - P - 1, -1, ling_l + 0.4, P + 2, ling_h + 0.3 + 1))
-    if con_scritta:   # variante «scritta»: Viola (30) e Villa alle Rane (9), come nell'anteprima approvata da Jonata
+    if con_scritta:   # variant «scritta»: Viola (30) and Villa alle Rane (9), as in the approved preview from Jonata
         s = s.cut(scritta("Viola", 41.664, True, (0.546, 0.352), 78))
         s = s.cut(scritta("Villa alle Rane", 12.499, False, (-0.169, 0.106), 40))
     # fori per gli inserti filettati
@@ -116,7 +116,7 @@ def corpo(con_scritta=False):
 
 
 def posto_scheda(cx, cy, lx, ly, ix, iy):
-    """Cornice bassa che segna il posto della scheda + 4 colonnine con foro."""
+    """Low frame marking the board position + 4 posts with holes."""
     cornice = (scatola(-lx / 2 - bordo_sp, -ly / 2 - bordo_sp, 0, lx + 2 * bordo_sp, ly + 2 * bordo_sp, bordo_h)
                .cut(scatola(-lx / 2, -ly / 2, -1, lx, ly, bordo_h + 2)))
     s = cornice
@@ -129,7 +129,7 @@ def posto_scheda(cx, cy, lx, ly, ix, iy):
 
 
 def culla(cx, cy, lx, ly):
-    """Culla del convertitore: parete lunga dietro, fermo corto davanti."""
+    """Converter cradle: long wall at the back, short stop at the front."""
     s = scatola(-lx / 2, ly / 2 + culla_gioco, 0, lx, culla_sp, culla_h)
     s = s.union(scatola(-6, -ly / 2 - culla_gioco - culla_sp, 0, 12, culla_sp, culla_h))
     return s.translate((cx, cy, f_sp))
@@ -183,13 +183,13 @@ if __name__ == "__main__":
     def vol(w):
         return sum(x.Volume() for x in w.solids().vals()) if w.vals() else 0.0
 
-    # cose montate sul VASSOIO: Minx, i suoi due morsetti (sporgono 12, alti fino a 24, 25 liberi in mezzo; larghezza 12 stimata), ampli, convertitore
+    # parts mounted on the TRAY: Minx, its two terminals (protrude 12 mm, height up to 24 mm, 25 mm free in the middle; estimated width 12 mm), amplifier, converter
     sul_vassoio = (scatola(-minx_l / 2, minx_y0, f_sp, minx_l, minx_p, minx_l)
                    .union(scatola(amp_cx - amp_x / 2, amp_cy - amp_y / 2, f_sp + col_h, amp_x, amp_y, amp_h))
                    .union(scatola(buck_cx - buck_x / 2, buck_cy - buck_y / 2, f_sp, buck_x, buck_y, buck_h)))
     for x0 in (12.5, -24.5):
         sul_vassoio = sul_vassoio.union(scatola(x0, minx_y0 - 12, f_sp + 6, 12, 12, 18))
-    # cose montate sul CUBO: PE nel coperchio; pannello (scheda 75 x 75 nel foro, 17 mm dal vetro appoggiato fuori)
+    # parts mounted on the CUBE: PE in the lid; panel (board 75 x 75 in the hole, 17 mm from the glass resting outside)
     sul_cubo = tondo(pe_lato, pe_alto, pe_r, z=L - pe_alto).union(scatola(-37.5, -L / 2, pan_z - 37.5, 75, 17, 75))
 
     print(f"cubo contro vassoio: volume in comune = {vol(c.intersect(f)):.2f} mm3 (deve essere 0)")

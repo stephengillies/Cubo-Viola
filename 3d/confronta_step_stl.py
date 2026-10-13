@@ -1,5 +1,5 @@
-# Prova: gli STL di OpenSCAD e gli STEP di CadQuery sono lo stesso pezzo? Volume, ingombro e numero di corpi separati.
-# Uso: python confronta_step_stl.py <file.stl> [<file.step>]
+# Check: are the OpenSCAD STL files and the CadQuery STEP files the same part? Volume, envelope, and number of separate bodies.
+# Usage: python confronta_step_stl.py <file.stl> [<file.step>]
 import re
 import sys
 
